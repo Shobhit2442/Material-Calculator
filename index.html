@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A simple, offline construction material calculator.">
+  <title>BuildWise | Material Calculator</title>
+  <style>
+    :root { --ink:#17232f; --muted:#63707c; --paper:#fffdf8; --line:#dce3df; --orange:#e96f36; --orange-dark:#b94c20; --green:#1f7557; --green-pale:#e2f0e9; --cream:#f2ede3; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); font:16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:linear-gradient(115deg,#f5f1e8 0%,#f7f9f6 48%,#e6f0eb 100%); }
+    button, input, select { font:inherit; }
+    button { cursor:pointer; }
+    .shell { width:min(1120px,calc(100% - 32px)); margin:auto; }
+    header { padding:28px 0 24px; display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .brand { display:flex; align-items:center; gap:11px; font-size:1.15rem; font-weight:800; letter-spacing:-.03em; }
+    .mark { width:37px; height:37px; display:grid; place-items:center; border-radius:12px; color:white; background:var(--orange); box-shadow:5px 5px 0 #f7c9ae; font-size:1.15rem; }
+    .badge { color:var(--green); background:var(--green-pale); padding:7px 12px; border-radius:99px; font-size:.8rem; font-weight:700; }
+    main { display:grid; grid-template-columns:1.08fr .92fr; gap:24px; align-items:start; padding-bottom:42px; }
+    .hero, .panel { background:rgba(255,253,248,.9); border:1px solid rgba(220,227,223,.9); border-radius:24px; box-shadow:0 15px 35px rgba(34,57,48,.08); }
+    .hero { padding:36px; }
+    .eyebrow { margin:0 0 10px; color:var(--orange-dark); font-size:.78rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:650px; margin:0; font:800 clamp(2.35rem,5vw,4.5rem)/.98 Georgia, serif; letter-spacing:-.055em; }
+    .lead { max-width:560px; margin:20px 0 30px; color:var(--muted); font-size:1.08rem; }
+    .type-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .type { min-height:108px; padding:16px; border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--ink); text-align:left; transition:.18s ease; }
+    .type:hover { transform:translateY(-2px); border-color:#abc3b7; }
+    .type.active { border:2px solid var(--green); background:var(--green-pale); box-shadow:inset 0 0 0 1px rgba(31,117,87,.08); }
+    .type .icon { display:block; margin-bottom:8px; font-size:1.4rem; }
+    .type strong, .type small { display:block; } .type small { color:var(--muted); font-size:.78rem; margin-top:2px; }
+    .note { display:flex; gap:10px; align-items:flex-start; margin:28px 0 0; padding:13px 15px; color:#52635b; background:#f4f7f3; border-radius:12px; font-size:.84rem; }
+    .panel { overflow:hidden; }
+    .panel-head { padding:26px 28px 18px; border-bottom:1px solid var(--line); }
+    .panel-head h2 { margin:0; font:800 1.6rem Georgia,serif; letter-spacing:-.03em; }
+    .panel-head p { margin:5px 0 0; color:var(--muted); font-size:.9rem; }
+    form { padding:22px 28px 28px; }
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field.full { grid-column:1/-1; }
+    label { font-size:.79rem; font-weight:800; color:#405149; }
+    input, select { width:100%; padding:11px 12px; color:var(--ink); background:#fff; border:1px solid #cbd6cf; border-radius:9px; outline:none; }
+    input:focus, select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(31,117,87,.13); }
+    .unit { position:relative; } .unit span { position:absolute; right:11px; top:35px; color:var(--muted); font-size:.8rem; pointer-events:none; }
+    .unit input { padding-right:38px; }
+    .advanced { margin:20px 0 0; } summary { color:var(--green); font-size:.86rem; font-weight:800; cursor:pointer; }
+    .advanced .field-grid { margin-top:15px; }
+    .submit { width:100%; margin-top:23px; padding:14px 18px; border:0; border-radius:10px; color:white; background:var(--orange); font-weight:800; box-shadow:0 7px 0 var(--orange-dark); transition:.15s ease; }
+    .submit:hover { background:#f17b42; } .submit:active { transform:translateY(4px); box-shadow:0 3px 0 var(--orange-dark); }
+    .results { margin:0 28px 28px; padding:20px; background:#183d32; color:white; border-radius:16px; }
+    .results[hidden] { display:none; } .results h3 { margin:0 0 3px; font:800 1.3rem Georgia,serif; } .results > p { margin:0 0 15px; color:#bcd5c9; font-size:.82rem; }
+    .result-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; } .result { padding:11px; background:rgba(255,255,255,.09); border-radius:9px; } .result span { display:block; color:#bcd5c9; font-size:.72rem; } .result strong { display:block; margin-top:2px; font-size:1.08rem; }
+    .history { grid-column:1/-1; padding:23px 28px; background:#fffdf8; border:1px solid var(--line); border-radius:20px; } .history-top { display:flex; justify-content:space-between; gap:12px; align-items:center; } .history h2 { margin:0; font:800 1.25rem Georgia,serif; } .clear { border:0; color:var(--orange-dark); background:none; font-size:.83rem; font-weight:800; } .history ul { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:17px 0 0; padding:0; list-style:none; } .history li { padding:12px; border-radius:10px; background:#f4f6f3; color:#405149; font-size:.82rem; } .history li strong { display:block; color:var(--ink); } .empty { color:var(--muted); }
+    footer { padding:0 0 30px; color:var(--muted); text-align:center; font-size:.78rem; }
+    @media (max-width:800px) { main { grid-template-columns:1fr; } .history { grid-column:auto; } .history ul { grid-template-columns:1fr; } }
+    @media (max-width:480px) { .shell { width:min(100% - 22px,1120px); } header { padding:18px 0; } .badge { display:none; } .hero { padding:27px 21px; } .panel-head, form { padding-left:21px; padding-right:21px; } .results { margin-left:21px; margin-right:21px; } .field-grid, .type-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header><div class="brand"><span class="mark">▦</span> BuildWise</div><span class="badge">OFFLINE &amp; PRIVATE</span></header>
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">Construction planning made simple</p>
+        <h1 id="page-title">Know what to buy before you build.</h1>
+        <p class="lead">Estimate core materials in seconds. Choose a project, add the dimensions, and get a clear shopping list for your site.</p>
+        <div class="type-grid" role="group" aria-label="Calculator type">
+          <button class="type active" data-kind="concrete" type="button"><span class="icon">▰</span><strong>Concrete</strong><small>Slabs, footings &amp; columns</small></button>
+          <button class="type" data-kind="brick" type="button"><span class="icon">▤</span><strong>Brick wall</strong><small>Bricks, cement &amp; sand</small></button>
+          <button class="type" data-kind="plaster" type="button"><span class="icon">▱</span><strong>Plaster</strong><small>Wall &amp; ceiling finishes</small></button>
+          <button class="type" data-kind="asphalt" type="button"><span class="icon">▧</span><strong>Asphalt road</strong><small>Hot-mix asphalt quantity</small></button>
+        </div>
+        <p class="note"><span>✦</span><span>Estimates include standard conversion factors. Confirm your engineer’s mix design and local waste allowance before ordering.</span></p>
+      </section>
+      <section class="panel" aria-labelledby="form-title">
+        <div class="panel-head"><h2 id="form-title">Concrete estimate</h2><p id="form-copy">For slabs, footings, beams and columns.</p></div>
+        <form id="calculator-form">
+          <div class="field-grid" id="fields"></div>
+          <details class="advanced"><summary>Project assumptions</summary><div class="field-grid" id="advanced-fields"></div></details>
+          <button class="submit" type="submit">Calculate materials →</button>
+        </form>
+        <section class="results" id="results" hidden aria-live="polite"></section>
+      </section>
+      <section class="history" aria-labelledby="history-title"><div class="history-top"><h2 id="history-title">Recent estimates</h2><button class="clear" type="button" id="clear-history">Clear history</button></div><ul id="history-list"><li class="empty">Your latest five estimates will appear here.</li></ul></section>
+    </main>
+    <footer>BuildWise uses metric measurements. Calculations are estimates, not engineering specifications.</footer>
+  </div>
+  <script>
+    const projects = {
+      concrete: { title:'Concrete estimate', copy:'For slabs, footings, beams and columns.', fields:[['length','Length','m','10'],['width','Width','m','4'],['depth','Thickness / depth','m','0.15'],['ratio','Mix ratio','',null,['1:1.5:3','1:2:4','1:3:6']]], advanced:[['waste','Waste allowance','%','5'],['dryFactor','Dry-volume factor','×','1.54']], calculate(v) { const wet=v.length*v.width*v.depth, dry=wet*v.dryFactor*(1+v.waste/100), r=v.ratio.split(':').map(Number), total=r.reduce((a,b)=>a+b), cement=dry*r[0]/total, sand=dry*r[1]/total, aggregate=dry*r[2]/total; return { headline:`${format(wet)} m³ concrete`, detail:'Material quantities include your dry-volume factor and waste allowance.', items:[['Cement',`${Math.ceil(cement*1440/50)} bags`],['Sand',`${format(sand)} m³`],['Aggregate',`${format(aggregate)} m³`],['Dry material',`${format(dry)} m³`]]}; } },
+      brick: { title:'Brick wall estimate', copy:'For standard masonry walls.', fields:[['length','Wall length','m','10'],['height','Wall height','m','3'],['thickness','Wall thickness','m','0.115'],['ratio','Mortar ratio','',null,['1:4','1:6']]], advanced:[['waste','Brick waste allowance','%','5'],['dryFactor','Mortar dry-volume factor','×','1.33']], calculate(v) { const volume=v.length*v.height*v.thickness, bricks=Math.ceil(volume/0.001539*(1+v.waste/100)), mortar=volume*.23, dry=mortar*v.dryFactor, r=v.ratio.split(':').map(Number), sum=r[0]+r[1], cement=dry*r[0]/sum, sand=dry*r[1]/sum; return { headline:`${format(volume)} m³ brickwork`, detail:'Based on nominal brickwork volume and 23% wet mortar.', items:[['Bricks',`${bricks.toLocaleString()} nos`],['Cement',`${Math.ceil(cement*1440/50)} bags`],['Sand',`${format(sand)} m³`],['Mortar (wet)',`${format(mortar)} m³`]]}; } },
+      plaster: { title:'Plaster estimate', copy:'For one side of a wall or ceiling.', fields:[['length','Length','m','10'],['height','Height','m','3'],['thickness','Plaster thickness','mm','12'],['ratio','Mortar ratio','',null,['1:4','1:6']]], advanced:[['waste','Waste allowance','%','5'],['dryFactor','Mortar dry-volume factor','×','1.33']], calculate(v) { const area=v.length*v.height, wet=area*(v.thickness/1000), dry=wet*v.dryFactor*(1+v.waste/100), r=v.ratio.split(':').map(Number), sum=r[0]+r[1], cement=dry*r[0]/sum, sand=dry*r[1]/sum; return { headline:`${format(area)} m² plaster area`, detail:'One-coat plaster estimate with the selected thickness.', items:[['Cement',`${Math.ceil(cement*1440/50)} bags`],['Sand',`${format(sand)} m³`],['Wet mortar',`${format(wet)} m³`],['Dry material',`${format(dry)} m³`]]}; } },
+      asphalt: { title:'Asphalt road estimate', copy:'For hot-mix asphalt surfacing.', fields:[['length','Road length','m','100'],['width','Road width','m','3.5'],['depth','Asphalt thickness','mm','50']], advanced:[['waste','Waste allowance','%','5'],['density','Asphalt density','t/m³','2.35']], calculate(v) { const volume=v.length*v.width*(v.depth/1000), tonnes=volume*v.density*(1+v.waste/100); return { headline:`${format(tonnes)} tonnes asphalt`, detail:'Based on compacted volume, density, and the selected allowance.', items:[['Compacted volume',`${format(volume)} m³`],['Hot-mix asphalt',`${format(tonnes)} tonnes`],['Area',`${format(v.length*v.width)} m²`],['Thickness',`${format(v.depth)} mm`]]}; } }
+    };
+    let current='concrete'; const fields=document.querySelector('#fields'), advanced=document.querySelector('#advanced-fields'), results=document.querySelector('#results'), form=document.querySelector('#calculator-form');
+    const format = n => new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n);
+    function fieldHtml([name,label,unit,placeholder,options]) { return `<div class="field"><label for="${name}">${label}</label><div class="unit">${options ? `<select id="${name}">${options.map(x=>`<option>${x}</option>`).join('')}</select>` : `<input id="${name}" type="number" min="0" step="any" placeholder="${placeholder}" required>`}${unit?`<span>${unit}</span>`:''}</div></div>`; }
+    function render() { const p=projects[current]; document.querySelector('#form-title').textContent=p.title; document.querySelector('#form-copy').textContent=p.copy; fields.innerHTML=p.fields.map(fieldHtml).join(''); advanced.innerHTML=p.advanced.map(fieldHtml).join(''); results.hidden=true; }
+    function history() { const entries=JSON.parse(localStorage.getItem('buildwise-history')||'[]'), list=document.querySelector('#history-list'); list.innerHTML=entries.length ? entries.map(e=>`<li><strong>${e.type}</strong>${e.value}<br><small>${e.time}</small></li>`).join('') : '<li class="empty">Your latest five estimates will appear here.</li>'; }
+    document.querySelectorAll('.type').forEach(button=>button.addEventListener('click',()=>{ current=button.dataset.kind; document.querySelectorAll('.type').forEach(b=>b.classList.toggle('active',b===button)); render(); }));
+    form.addEventListener('submit', event=>{ event.preventDefault(); const values={}; [...fields.querySelectorAll('input,select'),...advanced.querySelectorAll('input,select')].forEach(el=>values[el.id]=el.tagName==='SELECT'?el.value:Number(el.value)); if(Object.values(values).some(x=>typeof x==='number'&&(!Number.isFinite(x)||x<=0))) return; const output=projects[current].calculate(values); results.innerHTML=`<h3>${output.headline}</h3><p>${output.detail}</p><div class="result-grid">${output.items.map(([label,value])=>`<div class="result"><span>${label}</span><strong>${value}</strong></div>`).join('')}</div>`; results.hidden=false; const old=JSON.parse(localStorage.getItem('buildwise-history')||'[]'); old.unshift({type:projects[current].title.replace(' estimate',''),value:output.headline,time:new Date().toLocaleString()}); localStorage.setItem('buildwise-history',JSON.stringify(old.slice(0,5))); history(); results.scrollIntoView({behavior:'smooth',block:'nearest'}); });
+    document.querySelector('#clear-history').addEventListener('click',()=>{localStorage.removeItem('buildwise-history');history();}); render(); history();
+  </script>
+</body>
+</html>
